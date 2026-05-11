@@ -1,10 +1,16 @@
 const registerForm = document.querySelector("#register-form");
 const registerStatus = document.querySelector("#register-status");
+const registerCard = document.querySelector("#register-card");
+const questionCard = document.querySelector("#question-card");
 const questionForm = document.querySelector("#question-form");
 const questionStatus = document.querySelector("#question-status");
 const publicList = document.querySelector("#public-questions-list");
 const publicEmpty = document.querySelector("#public-questions-empty");
 const publicRefreshButton = document.querySelector("#refresh-public-questions");
+const questionNicknameInput = document.querySelector("#question-nickname");
+const questionTextInput = document.querySelector("#question-text");
+
+let loggedInStudent = null;
 
 function setStatus(element, message, kind = "") {
     element.textContent = message;
@@ -13,6 +19,31 @@ function setStatus(element, message, kind = "") {
 
 function buildAuthHeader(nickname, password) {
     return `Basic ${btoa(`${nickname}:${password}`)}`;
+}
+
+function setLoggedInStudent(student) {
+    loggedInStudent = student;
+    registerCard?.classList.toggle("hidden", Boolean(student));
+    questionCard?.classList.toggle("hidden", !student);
+    questionNicknameInput.value = student?.nickname || "";
+    if (!student) {
+        questionForm?.reset();
+        questionStatus.textContent = "";
+        questionStatus.className = "status-text";
+    }
+}
+
+async function authenticateStudent(nickname, password) {
+    const response = await fetch("/api/users/check", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ nickname, password }),
+    });
+
+    const payload = await response.json();
+    return { response, payload };
 }
 
 function formatTimestamp(timestamp) {
@@ -60,29 +91,49 @@ registerForm?.addEventListener("submit", async (event) => {
     });
 
     const payload = await response.json();
+    if (response.ok) {
+        setLoggedInStudent({ nickname, password });
+        setStatus(registerStatus, `Nickname ${payload.nickname} ready to post.`, "success");
+        registerForm.reset();
+        questionTextInput.focus();
+        return;
+    }
+
+    if (response.status === 409) {
+        const { response: authResponse, payload: authPayload } = await authenticateStudent(nickname, password);
+        if (authResponse.ok) {
+            setLoggedInStudent({ nickname, password });
+            setStatus(registerStatus, `Welcome back, ${authPayload.nickname}.`, "success");
+            registerForm.reset();
+            questionTextInput.focus();
+            return;
+        }
+
+        setStatus(registerStatus, authPayload.error || "Invalid credentials.", "error");
+        return;
+    }
+
     if (!response.ok) {
         setStatus(registerStatus, payload.error || "Registration failed.", "error");
         return;
     }
-
-    document.querySelector("#question-nickname").value = nickname;
-    document.querySelector("#question-password").value = password;
-    setStatus(registerStatus, `Nickname ${payload.nickname} registered.`, "success");
-    registerForm.reset();
 });
 
 questionForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (!loggedInStudent) {
+        setStatus(questionStatus, "Register or log in before posting a question.", "error");
+        return;
+    }
+
     const formData = new FormData(questionForm);
-    const nickname = String(formData.get("nickname") || "").trim();
-    const password = String(formData.get("password") || "");
     const text = String(formData.get("text") || "").trim();
 
     const response = await fetch("/api/questions", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": buildAuthHeader(nickname, password),
+            "Authorization": buildAuthHeader(loggedInStudent.nickname, loggedInStudent.password),
         },
         body: JSON.stringify({ text }),
     });
@@ -94,7 +145,7 @@ questionForm?.addEventListener("submit", async (event) => {
     }
 
     setStatus(questionStatus, "Question sent successfully.", "success");
-    document.querySelector("#question-text").value = "";
+    questionTextInput.value = "";
     await loadPublicQuestions();
 });
 

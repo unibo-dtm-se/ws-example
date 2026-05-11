@@ -75,6 +75,21 @@ def create_app(
     def list_questions() -> ResponseReturnValue:
         return jsonify(repo.list_questions())
 
+    @app.post("/api/users/check")
+    def check_user() -> ResponseReturnValue:
+        payload = request.get_json(silent=True) or {}
+        nickname = str(payload.get("nickname", ""))
+        password = str(payload.get("password", ""))
+
+        try:
+            user = repo.authenticate_user(nickname, password)
+        except UnknownUserError:
+            return jsonify({"error": "User not found"}), HTTPStatus.NOT_FOUND
+        except InvalidCredentialsError:
+            return jsonify({"error": "Invalid credentials"}), HTTPStatus.UNAUTHORIZED
+
+        return jsonify({"nickname": user.nickname, "is_admin": user.is_admin})
+
     def require_basic_auth(*, admin_only: bool = False):
         def decorator(view_func):
             @wraps(view_func)

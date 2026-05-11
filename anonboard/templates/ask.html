@@ -17,9 +17,9 @@
             </div>
         </section>
 
-        <section class="grid-two-columns">
-            <section class="card">
-                <h2>Register nickname</h2>
+        <section>
+            <section id="register-card" class="card">
+                <h2>Register or log in</h2>
                 <form id="register-form" class="stacked-form">
                     <label>
                         Nickname
@@ -29,21 +29,17 @@
                         Password
                         <input id="register-password" name="password" type="password" maxlength="120" required>
                     </label>
-                    <button type="submit">Register</button>
+                    <button type="submit">Continue</button>
                 </form>
                 <p id="register-status" class="status-text" aria-live="polite"></p>
             </section>
 
-            <section class="card">
+            <section id="question-card" class="card hidden">
                 <h2>Post question</h2>
                 <form id="question-form" class="stacked-form">
                     <label>
                         Nickname
-                        <input id="question-nickname" name="nickname" type="text" autocomplete="username" required>
-                    </label>
-                    <label>
-                        Password
-                        <input id="question-password" name="password" type="password" autocomplete="current-password" required>
+                        <input id="question-nickname" name="nickname" type="text" autocomplete="username" readonly required>
                     </label>
                     <label>
                         Question

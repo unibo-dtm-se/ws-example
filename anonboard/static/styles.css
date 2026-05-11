@@ -235,6 +235,10 @@ button:disabled {
     color: var(--answered);
 }
 
+.hidden {
+    display: none;
+}
+
 .question-list {
     list-style: none;
     margin: 0;

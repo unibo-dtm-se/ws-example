@@ -41,6 +41,29 @@ def test_post_question_requires_authentication(client):
     assert response.status_code == 401
 
 
+def test_registered_student_can_be_checked(client):
+    client.post("/api/register", json={"nickname": "alice", "password": "wonder"})
+
+    response = client.post(
+        "/api/users/check",
+        json={"nickname": "alice", "password": "wonder"},
+    )
+
+    assert response.status_code == 200
+    assert response.get_json() == {"nickname": "alice", "is_admin": False}
+
+
+def test_user_check_rejects_invalid_credentials(client):
+    client.post("/api/register", json={"nickname": "alice", "password": "wonder"})
+
+    response = client.post(
+        "/api/users/check",
+        json={"nickname": "alice", "password": "wrong"},
+    )
+
+    assert response.status_code == 401
+
+
 def test_registered_student_can_post_and_everyone_can_list_questions(client):
     client.post("/api/register", json={"nickname": "alice", "password": "wonder"})
 
