@@ -34,6 +34,27 @@ function buildAuthHeader(nickname, password) {
     return `Basic ${btoa(`${nickname}:${password}`)}`;
 }
 
+async function checkTeacherCredentials(nickname, password) {
+    const response = await fetch("/api/users/check", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ nickname, password }),
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+        return { ok: false, message: payload.error || "Invalid credentials." };
+    }
+
+    if (!payload.is_admin) {
+        return { ok: false, message: "Teacher credentials required." };
+    }
+
+    return { ok: true, payload };
+}
+
 function setTeacherLoggedIn(nextState) {
     teacherLoggedIn = nextState;
     teacherAuthCard?.classList.toggle("hidden", nextState);
@@ -128,6 +149,15 @@ teacherAuthForm?.addEventListener("submit", async (event) => {
     const nickname = String(formData.get("nickname") || "").trim();
     const password = String(formData.get("password") || "");
 
+    const result = await checkTeacherCredentials(nickname, password);
+    if (!result.ok) {
+        clearTeacherCredentials();
+        setTeacherLoggedIn(false);
+        setTeacherStatus(result.message, "error");
+        await loadQuestions();
+        return;
+    }
+
     saveTeacherCredentials(nickname, password);
     setTeacherLoggedIn(true);
     setTeacherStatus("Teacher credentials saved in local storage.", "success");
@@ -156,10 +186,18 @@ if (nicknameField && passwordField) {
 }
 
 async function initializeTeacherView() {
-    setTeacherLoggedIn(Boolean(initialCredentials.nickname && initialCredentials.password));
-
-    if (teacherLoggedIn) {
-        setTeacherStatus("Teacher credentials restored from local storage.", "success");
+    if (initialCredentials.nickname && initialCredentials.password) {
+        const result = await checkTeacherCredentials(initialCredentials.nickname, initialCredentials.password);
+        if (result.ok) {
+            setTeacherLoggedIn(true);
+            setTeacherStatus("Teacher credentials restored from local storage.", "success");
+        } else {
+            clearTeacherCredentials();
+            setTeacherLoggedIn(false);
+            setTeacherStatus(result.message, "error");
+        }
+    } else {
+        setTeacherLoggedIn(false);
     }
 
     await loadQuestions();
