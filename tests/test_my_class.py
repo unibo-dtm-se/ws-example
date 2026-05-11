@@ -1,6 +1,6 @@
 import pytest
 
-from my_project import MyClass
+from ws-example import MyClass
 
 
 # can test using classes, name must begin with `Test`
