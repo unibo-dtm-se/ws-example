@@ -1,25 +1,5 @@
-import logging
+from anonboard.ws import create_app
+from anonboard.cli import main
+from anonboard.store import InMemoryBoardRepository
 
-
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger("anonboard")
-
-
-# this is the initial module of your app
-# this is executed whenever some client-code is calling `import anonboard` or `from anonboard import ...`
-# put your main classes here, eg:
-class MyClass:
-    def my_method(self):
-        return "Hello World"
-
-
-def main():
-    # this is the main module of your app
-    # it is only required if your project must be runnable
-    # this is the script to be executed whenever some users writes `python -m anonboard` on the command line, eg.
-    x = MyClass().my_method()
-    print(x)
-
-
-# let this be the last line of this file
-logger.info("anonboard loaded")
+__all__ = ["InMemoryBoardRepository", "create_app", "main"]

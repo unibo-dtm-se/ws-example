@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnonBoard Student View</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <main class="layout layout-student">
+        <section class="hero card accent-card">
+            <p class="eyebrow">AnonBoard</p>
+            <h1>Post an anonymous question</h1>
+            <p class="lede">Create a nickname once, then send timestamped questions that appear immediately on the teacher board.</p>
+            <div class="pill-row">
+                <a class="pill pill-link" href="{{ url_for('teacher_page') }}">Open teacher page</a>
+            </div>
+        </section>
+
+        <section class="grid-two-columns">
+            <section class="card">
+                <h2>Register nickname</h2>
+                <form id="register-form" class="stacked-form">
+                    <label>
+                        Nickname
+                        <input id="register-nickname" name="nickname" type="text" maxlength="40" required>
+                    </label>
+                    <label>
+                        Password
+                        <input id="register-password" name="password" type="password" maxlength="120" required>
+                    </label>
+                    <button type="submit">Register</button>
+                </form>
+                <p id="register-status" class="status-text" aria-live="polite"></p>
+            </section>
+
+            <section class="card">
+                <h2>Post question</h2>
+                <form id="question-form" class="stacked-form">
+                    <label>
+                        Nickname
+                        <input id="question-nickname" name="nickname" type="text" autocomplete="username" required>
+                    </label>
+                    <label>
+                        Password
+                        <input id="question-password" name="password" type="password" autocomplete="current-password" required>
+                    </label>
+                    <label>
+                        Question
+                        <textarea id="question-text" name="text" rows="5" maxlength="500" placeholder="Write your question here" required></textarea>
+                    </label>
+                    <button type="submit">Submit question</button>
+                </form>
+                <p id="question-status" class="status-text" aria-live="polite"></p>
+            </section>
+        </section>
+
+        <section class="card questions-card">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Shared board</p>
+                    <h2>All questions</h2>
+                </div>
+                <button id="refresh-public-questions" class="secondary-button" type="button">Refresh</button>
+            </div>
+            <ul id="public-questions-list" class="question-list"></ul>
+            <p id="public-questions-empty" class="empty-state">Questions will appear here as soon as someone posts one.</p>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='student.js') }}" defer></script>
+</body>
+</html>
