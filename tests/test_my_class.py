@@ -1,6 +1,6 @@
 import pytest
 
-from ws-example import MyClass
+from anonboard import MyClass
 
 
 # can test using classes, name must begin with `Test`

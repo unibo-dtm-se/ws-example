@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "ws-example"
+name = "anonboard"
 packages = [
-    { include = "ws-example" },
+    { include = "anonboard" },
 ]
 version = "2.4.1"
 description = "A template for Python projects, using Poetry"
@@ -30,8 +30,8 @@ ruff-check = "ruff check"
 ruff-fix = "ruff check --fix"
 format = "ruff format"
 format-check = "ruff format --check"
-mypy = "mypy ws-example tests"
-compile = "python -m compileall ws-example tests"
+mypy = "mypy anonboard tests"
+compile = "python -m compileall anonboard tests"
 static-checks = [
     "ruff-check",
     "mypy",

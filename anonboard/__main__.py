@@ -1,0 +1,3 @@
+import anonboard
+
+anonboard.main()

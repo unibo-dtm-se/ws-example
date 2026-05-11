@@ -4,7 +4,7 @@ A simple template of Python projects, with a rigid file structure, and predispos
 
 ## Relevant features
 
-- All your project code into a single main package (`ws-example/`)
+- All your project code into a single main package (`anonboard/`)
 - All your project tests into a single test package (`test/`)
 - Unit testing support via [`unittest`](https://docs.python.org/3/library/unittest.html)
 - Automatic testing on all branches via GitHub Actions
@@ -18,7 +18,7 @@ A simple template of Python projects, with a rigid file structure, and predispos
 Overview:
 ```bash
 <root directory>
-├── ws-example/             # main package (should be named after your project)
+├── anonboard/             # main package (should be named after your project)
 │   ├── __init__.py         # python package marker
 │   └── __main__.py         # application entry point
 ├── tests/                  # test package (should contain unit tests)
@@ -35,19 +35,19 @@ Overview:
 
 ## TODO-list for template usage
 
-1. Use this template to create a new GitHub repository, say `ws-example`
+1. Use this template to create a new GitHub repository, say `anonboard`
     - this name will also be used to identify the package on PyPi
         + so, we suggest choosing a name which has not been used on PyPi, yet
         + we also suggest choosing a name which is a valid Python package name (i.e. `using_snake_case`)
 
-2. Clone the `ws-example` repository
+2. Clone the `anonboard` repository
 
-3. Open a shell into your local `ws-example` directory and run
+3. Open a shell into your local `anonboard` directory and run
     ```bash
-    ./rename-template.sh ws-example
+    ./rename-template.sh anonboard
     ```
-    
-    This will coherently rename the template's project name with the one chosen by you (i.e. `ws-example`, in this example)
+
+    This will coherently rename the template's project name with the one chosen by you (i.e. `anonboard`, in this example)
 
     * __Remark__: this step is now automatic thanks to the `init.yml` workflow which is triggered when using this template to create a new repository
 
@@ -80,7 +80,7 @@ Overview:
     - cf. <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic>
     - the token must allow pushing to the repository
 
-13. Put your main (resp. test) code in `ws-example/` (resp. `test/`)
+13. Put your main (resp. test) code in `anonboard/` (resp. `test/`)
 
 ## How to do stuff
 
@@ -129,9 +129,9 @@ Overview:
 
 ### Run your code as an application
 
-This will execute the `__main__.py` file in the `ws-example` package:
+This will execute the `__main__.py` file in the `anonboard` package:
 ```bash
-poetry run python -m ws-example
+poetry run python -m anonboard
 ```
 
 the latter is possible because of the script defined in the `pyproject.toml` file.
