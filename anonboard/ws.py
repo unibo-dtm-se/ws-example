@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from functools import wraps
 from http import HTTPStatus
 
@@ -62,7 +61,9 @@ def create_app(
         try:
             user = repo.register_user(nickname, password)
         except DuplicateNicknameError:
-            return jsonify({"error": "Nickname already registered"}), HTTPStatus.CONFLICT
+            return jsonify(
+                {"error": "Nickname already registered"}
+            ), HTTPStatus.CONFLICT
         except ValueError as exc:
             return jsonify({"error": str(exc)}), HTTPStatus.BAD_REQUEST
 
@@ -128,7 +129,9 @@ def create_app(
     def update_question(_admin_user, question_id: int) -> ResponseReturnValue:
         payload = request.get_json(silent=True) or {}
         if "answered" not in payload or not isinstance(payload["answered"], bool):
-            return jsonify({"error": "The answered field must be a boolean"}), HTTPStatus.BAD_REQUEST
+            return jsonify(
+                {"error": "The answered field must be a boolean"}
+            ), HTTPStatus.BAD_REQUEST
         try:
             question = repo.set_answered(question_id, payload["answered"])
         except QuestionNotFoundError:

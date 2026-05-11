@@ -49,7 +49,9 @@ class InMemoryBoardRepository:
         self._questions: list[QuestionRecord] = []
         self._next_question_id = 1
 
-    def register_user(self, nickname: str, password: str, *, is_admin: bool = False) -> UserRecord:
+    def register_user(
+        self, nickname: str, password: str, *, is_admin: bool = False
+    ) -> UserRecord:
         normalized_nickname = nickname.strip()
         if not normalized_nickname:
             raise ValueError("Nickname must not be empty")
@@ -57,7 +59,9 @@ class InMemoryBoardRepository:
             raise ValueError("Password must not be empty")
         if normalized_nickname in self._users:
             raise DuplicateNicknameError(normalized_nickname)
-        user = UserRecord(nickname=normalized_nickname, password=password, is_admin=is_admin)
+        user = UserRecord(
+            nickname=normalized_nickname, password=password, is_admin=is_admin
+        )
         self._users[normalized_nickname] = user
         return user
 
@@ -91,7 +95,9 @@ class InMemoryBoardRepository:
         return question
 
     def list_questions(self) -> list[dict[str, object]]:
-        questions = sorted(self._questions, key=lambda question: question.created_at, reverse=True)
+        questions = sorted(
+            self._questions, key=lambda question: question.created_at, reverse=True
+        )
         return [question.to_dict() for question in questions]
 
     def set_answered(self, question_id: int, answered: bool) -> dict[str, object]:

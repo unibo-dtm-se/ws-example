@@ -139,7 +139,10 @@ def test_questions_are_sorted_from_newest_to_oldest(client):
     response = client.get("/api/questions")
 
     assert response.status_code == 200
-    assert [item["text"] for item in response.get_json()] == ["Second question", "First question"]
+    assert [item["text"] for item in response.get_json()] == [
+        "Second question",
+        "First question",
+    ]
 
 
 def test_html_pages_are_served(client):

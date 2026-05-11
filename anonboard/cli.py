@@ -7,7 +7,9 @@ from anonboard.ws import create_app
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run the anonboard web service")
     parser.add_argument("--host", default=os.getenv("ANONBOARD_HOST", "127.0.0.1"))
-    parser.add_argument("--port", type=int, default=int(os.getenv("ANONBOARD_PORT", "5000")))
+    parser.add_argument(
+        "--port", type=int, default=int(os.getenv("ANONBOARD_PORT", "5000"))
+    )
     parser.add_argument(
         "--admin-nickname",
         default=os.getenv("ANONBOARD_ADMIN_NICKNAME", "admin"),
