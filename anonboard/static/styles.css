@@ -126,8 +126,16 @@ main {
     transition: transform 160ms ease, background 160ms ease;
 }
 
+.pill-button {
+    cursor: pointer;
+    border: none;
+    transition: transform 160ms ease, background 160ms ease;
+}
+
 .pill-link:hover,
-.pill-link:focus-visible {
+.pill-link:focus-visible,
+.pill-button:hover,
+.pill-button:focus-visible {
     background: rgba(164, 74, 63, 0.18);
     transform: translateY(-1px);
 }
@@ -185,6 +193,14 @@ button:hover,
 button:focus-visible {
     background: var(--accent-strong);
     transform: translateY(-1px);
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+    background: rgba(47, 36, 29, 0.14);
+    color: var(--muted);
+    transform: none;
 }
 
 .secondary-button {

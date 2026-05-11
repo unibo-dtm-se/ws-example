@@ -15,10 +15,12 @@
             <div class="pill-row">
                 <span class="pill">Admin account: {{ admin_nickname }}</span>
                 <a class="pill pill-link" href="{{ url_for('student_page') }}">Open student page</a>
+                <button id="teacher-logout" class="pill pill-button hidden" type="button">Log out teacher</button>
             </div>
+            <p id="teacher-auth-status" class="status-text" aria-live="polite"></p>
         </section>
 
-        <section class="card credentials-card">
+        <section id="teacher-auth-card" class="card credentials-card">
             <h2>Teacher credentials</h2>
             <form id="teacher-auth-form" class="stacked-form">
                 <label>
@@ -31,7 +33,6 @@
                 </label>
                 <button type="submit">Save session</button>
             </form>
-            <p id="teacher-auth-status" class="status-text" aria-live="polite"></p>
         </section>
 
         <section class="card questions-card">

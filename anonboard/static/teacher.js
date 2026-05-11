@@ -1,8 +1,12 @@
 const teacherAuthForm = document.querySelector("#teacher-auth-form");
+const teacherAuthCard = document.querySelector("#teacher-auth-card");
 const teacherStatus = document.querySelector("#teacher-auth-status");
+const teacherLogoutButton = document.querySelector("#teacher-logout");
 const questionsList = document.querySelector("#questions-list");
 const questionsEmpty = document.querySelector("#questions-empty");
 const refreshButton = document.querySelector("#refresh-questions");
+
+let teacherLoggedIn = false;
 
 function readTeacherCredentials() {
     return {
@@ -16,6 +20,11 @@ function saveTeacherCredentials(nickname, password) {
     localStorage.setItem("anonboard.teacher.password", password);
 }
 
+function clearTeacherCredentials() {
+    localStorage.removeItem("anonboard.teacher.nickname");
+    localStorage.removeItem("anonboard.teacher.password");
+}
+
 function setTeacherStatus(message, kind = "") {
     teacherStatus.textContent = message;
     teacherStatus.className = `status-text ${kind}`.trim();
@@ -23,6 +32,12 @@ function setTeacherStatus(message, kind = "") {
 
 function buildAuthHeader(nickname, password) {
     return `Basic ${btoa(`${nickname}:${password}`)}`;
+}
+
+function setTeacherLoggedIn(nextState) {
+    teacherLoggedIn = nextState;
+    teacherAuthCard?.classList.toggle("hidden", nextState);
+    teacherLogoutButton?.classList.toggle("hidden", !nextState);
 }
 
 function formatTimestamp(timestamp) {
@@ -60,6 +75,7 @@ function renderQuestions(questions) {
         const toggle = document.createElement("button");
         toggle.type = "button";
         toggle.textContent = question.answered ? "Mark as pending" : "Mark as answered";
+        toggle.disabled = !teacherLoggedIn;
         toggle.addEventListener("click", () => updateQuestionMark(question.id, !question.answered));
 
         footer.append(toggle);
@@ -75,9 +91,15 @@ async function loadQuestions() {
 }
 
 async function updateQuestionMark(questionId, answered) {
+    if (!teacherLoggedIn) {
+        setTeacherStatus("Log in as teacher before changing question state.", "error");
+        return;
+    }
+
     const credentials = readTeacherCredentials();
     if (!credentials.nickname || !credentials.password) {
-        setTeacherStatus("Save teacher credentials before changing question state.", "error");
+        setTeacherLoggedIn(false);
+        setTeacherStatus("Log in as teacher before changing question state.", "error");
         return;
     }
 
@@ -107,7 +129,15 @@ teacherAuthForm?.addEventListener("submit", async (event) => {
     const password = String(formData.get("password") || "");
 
     saveTeacherCredentials(nickname, password);
-    setTeacherStatus("Teacher credentials saved in this browser session.", "success");
+    setTeacherLoggedIn(true);
+    setTeacherStatus("Teacher credentials saved in local storage.", "success");
+    await loadQuestions();
+});
+
+teacherLogoutButton?.addEventListener("click", async () => {
+    clearTeacherCredentials();
+    setTeacherLoggedIn(false);
+    setTeacherStatus("Teacher logged out.", "success");
     await loadQuestions();
 });
 
@@ -125,6 +155,16 @@ if (nicknameField && passwordField) {
     passwordField.value = initialCredentials.password;
 }
 
-loadQuestions().catch(() => {
+async function initializeTeacherView() {
+    setTeacherLoggedIn(Boolean(initialCredentials.nickname && initialCredentials.password));
+
+    if (teacherLoggedIn) {
+        setTeacherStatus("Teacher credentials restored from local storage.", "success");
+    }
+
+    await loadQuestions();
+}
+
+initializeTeacherView().catch(() => {
     setTeacherStatus("Unable to load questions right now.", "error");
 });
