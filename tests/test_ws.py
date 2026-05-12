@@ -278,18 +278,23 @@ def test_update_question_returns_not_found_for_unknown_question(client):
 
 
 def test_questions_are_sorted_from_newest_to_oldest(client):
+    import time
+
     client.post("/api/register", json={"nickname": "alice", "password": "wonder"})
 
-    client.post(
+    response = client.post(
         "/api/questions",
         json={"text": "First question"},
         headers=make_basic_auth_header("alice", "wonder"),
     )
-    client.post(
+    assert response.status_code == 201
+    time.sleep(0.01)  # Ensure a different timestamp for the next question
+    response = client.post(
         "/api/questions",
         json={"text": "Second question"},
         headers=make_basic_auth_header("alice", "wonder"),
     )
+    assert response.status_code == 201
 
     response = client.get("/api/questions")
 
