@@ -1,0 +1,342 @@
+openapi: 3.1.0
+info:
+  title: AnonBoard API
+  version: 2.4.1
+  description: |
+    Reverse-engineered OpenAPI specification for the AnonBoard Flask service.
+
+    The API allows students to register anonymous nicknames, verify stored user
+    credentials, list paginated questions, submit new questions, and update the
+    answered state of a question.
+servers:
+  - url: http://127.0.0.1:5000
+    description: Default local development server
+paths:
+  /api/register:
+    post:
+      tags:
+        - Students
+      summary: Register a new student nickname
+      description: |
+        Creates a new user in the in-memory repository. If the nickname already
+        exists, the request fails.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid nickname or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                emptyNickname:
+                  value:
+                    error: Nickname must not be empty
+                emptyPassword:
+                  value:
+                    error: Password must not be empty
+        '409':
+          description: Nickname already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Nickname already registered
+  /api/users/check:
+    post:
+      tags:
+        - Users
+      summary: Validate stored user credentials
+      description: |
+        Verifies that a user exists and that the supplied password is correct.
+        This endpoint does not create any backend session.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Credentials are valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Password is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Invalid credentials
+        '404':
+          description: User does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: User not found
+  /api/questions:
+    get:
+      tags:
+        - Questions
+      summary: List questions
+      description: |
+        Returns questions ordered from newest to oldest.
+
+        Pagination is enforced via query parameters. `page` defaults to `1` and
+        `limit` defaults to `25`. The backend caps `limit` to `1000`.
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: 1-based page number
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          description: Number of items per page; values above 1000 are capped server-side
+          schema:
+            type: integer
+            minimum: 1
+            default: 25
+            maximum: 1000
+      responses:
+        '200':
+          description: A page of questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Question'
+        '400':
+          description: Invalid pagination parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidPage:
+                  value:
+                    error: page must be a positive integer
+                invalidLimit:
+                  value:
+                    error: limit must be a positive integer
+    post:
+      tags:
+        - Questions
+      summary: Submit a new question
+      description: |
+        Creates a question for the authenticated user. Authentication uses HTTP
+        Basic credentials matching a previously registered user.
+      security:
+        - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostQuestionRequest'
+      responses:
+        '201':
+          description: Question created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '400':
+          description: Invalid question payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Question text must not be empty
+        '401':
+          description: Missing or invalid credentials
+          headers:
+            WWW-Authenticate:
+              description: Basic authentication challenge
+              schema:
+                type: string
+                example: Basic realm="anonboard"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                authenticationRequired:
+                  value:
+                    error: Authentication required
+                invalidCredentials:
+                  value:
+                    error: Invalid credentials
+  /api/questions/{question_id}:
+    patch:
+      tags:
+        - Questions
+      summary: Update the answered state of a question
+      description: |
+        Updates whether a question is marked as answered. Authentication uses
+        HTTP Basic and requires admin credentials.
+      security:
+        - BasicAuth: []
+      parameters:
+        - name: question_id
+          in: path
+          required: true
+          description: Numeric question identifier
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateQuestionRequest'
+      responses:
+        '200':
+          description: Question updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '400':
+          description: Missing or invalid answered field
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: The answered field must be a boolean
+        '401':
+          description: Missing, invalid, or non-admin credentials
+          headers:
+            WWW-Authenticate:
+              description: Basic authentication challenge
+              schema:
+                type: string
+                example: Basic realm="anonboard"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                authenticationRequired:
+                  value:
+                    error: Authentication required
+                invalidCredentials:
+                  value:
+                    error: Invalid credentials
+        '404':
+          description: Question not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Question not found
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - nickname
+        - password
+      properties:
+        nickname:
+          type: string
+          description: User nickname
+          minLength: 1
+          maxLength: 40
+        password:
+          type: string
+          description: User password
+          minLength: 8
+          maxLength: 120
+    PostQuestionRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: Question body text
+          minLength: 1
+          maxLength: 500
+    UpdateQuestionRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - answered
+      properties:
+        answered:
+          type: boolean
+          description: Whether the question has been addressed
+    User:
+      type: object
+      additionalProperties: false
+      required:
+        - nickname
+        - is_admin
+      properties:
+        nickname:
+          type: string
+        is_admin:
+          type: boolean
+    Question:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - text
+        - author
+        - timestamp
+        - answered
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        text:
+          type: string
+        author:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        answered:
+          type: boolean
+    Error:
+      type: object
+      additionalProperties: false
+      required:
+        - error
+      properties:
+        error:
+          type: string
