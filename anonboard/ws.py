@@ -74,7 +74,13 @@ def create_app(
 
     @app.get("/api/questions")
     def list_questions() -> ResponseReturnValue:
-        return jsonify(repo.list_questions())
+        try:
+            page = _read_positive_int_query_param("page", default=1)
+            limit = _read_positive_int_query_param("limit", default=25, maximum=1000)
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), HTTPStatus.BAD_REQUEST
+
+        return jsonify(repo.list_questions(page=page, limit=limit))
 
     @app.post("/api/users/check")
     def check_user() -> ResponseReturnValue:
@@ -145,3 +151,25 @@ def _auth_error(message: str) -> tuple[Response, int]:
     response = jsonify({"error": message})
     response.headers["WWW-Authenticate"] = 'Basic realm="anonboard"'
     return response, HTTPStatus.UNAUTHORIZED
+
+
+def _read_positive_int_query_param(
+    name: str,
+    *,
+    default: int,
+    maximum: int | None = None,
+) -> int:
+    raw_value = request.args.get(name)
+    if raw_value is None:
+        return default
+
+    try:
+        value = int(raw_value)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be a positive integer") from exc
+
+    if value <= 0:
+        raise ValueError(f"{name} must be a positive integer")
+    if maximum is not None:
+        return min(value, maximum)
+    return value

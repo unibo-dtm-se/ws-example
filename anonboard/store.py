@@ -94,11 +94,15 @@ class InMemoryBoardRepository:
         self._next_question_id += 1
         return question
 
-    def list_questions(self) -> list[dict[str, object]]:
+    def list_questions(
+        self, *, page: int = 1, limit: int = 25
+    ) -> list[dict[str, object]]:
         questions = sorted(
             self._questions, key=lambda question: question.created_at, reverse=True
         )
-        return [question.to_dict() for question in questions]
+        start_index = (page - 1) * limit
+        end_index = start_index + limit
+        return [question.to_dict() for question in questions[start_index:end_index]]
 
     def set_answered(self, question_id: int, answered: bool) -> dict[str, object]:
         for question in self._questions:

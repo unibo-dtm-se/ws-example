@@ -5,8 +5,13 @@ const teacherLogoutButton = document.querySelector("#teacher-logout");
 const questionsList = document.querySelector("#questions-list");
 const questionsEmpty = document.querySelector("#questions-empty");
 const refreshButton = document.querySelector("#refresh-questions");
+const loadMoreButton = document.querySelector("#load-more-questions");
 
 let teacherLoggedIn = false;
+let questionsPage = 1;
+let hasMoreQuestions = false;
+
+const questionsLimit = 10;
 
 function readTeacherCredentials() {
     return {
@@ -65,9 +70,15 @@ function formatTimestamp(timestamp) {
     return new Date(timestamp).toLocaleString();
 }
 
-function renderQuestions(questions) {
-    questionsList.innerHTML = "";
-    questionsEmpty.classList.toggle("hidden", questions.length > 0);
+function updateQuestionListState() {
+    questionsEmpty.classList.toggle("hidden", questionsList.children.length > 0);
+    loadMoreButton?.classList.toggle("hidden", !hasMoreQuestions);
+}
+
+function renderQuestions(questions, { append = false } = {}) {
+    if (!append) {
+        questionsList.innerHTML = "";
+    }
 
     for (const question of questions) {
         const item = document.createElement("li");
@@ -103,12 +114,21 @@ function renderQuestions(questions) {
         item.append(header, text, footer);
         questionsList.append(item);
     }
+
+    updateQuestionListState();
 }
 
-async function loadQuestions() {
-    const response = await fetch("/api/questions");
+async function loadQuestions({ append = false } = {}) {
+    const nextPage = append ? questionsPage + 1 : 1;
+    const response = await fetch(`/api/questions?page=${nextPage}&limit=${questionsLimit}`);
     const questions = await response.json();
-    renderQuestions(questions);
+    if (!response.ok) {
+        throw new Error(questions.error || "Unable to load questions.");
+    }
+
+    questionsPage = nextPage;
+    hasMoreQuestions = questions.length === questionsLimit;
+    renderQuestions(questions, { append });
 }
 
 async function updateQuestionMark(questionId, answered) {
@@ -174,6 +194,12 @@ teacherLogoutButton?.addEventListener("click", async () => {
 refreshButton?.addEventListener("click", () => {
     loadQuestions().catch(() => {
         setTeacherStatus("Unable to refresh questions right now.", "error");
+    });
+});
+
+loadMoreButton?.addEventListener("click", () => {
+    loadQuestions({ append: true }).catch(() => {
+        setTeacherStatus("Unable to load more questions right now.", "error");
     });
 });
 

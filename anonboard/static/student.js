@@ -7,10 +7,15 @@ const questionStatus = document.querySelector("#question-status");
 const publicList = document.querySelector("#public-questions-list");
 const publicEmpty = document.querySelector("#public-questions-empty");
 const publicRefreshButton = document.querySelector("#refresh-public-questions");
+const publicLoadMoreButton = document.querySelector("#load-more-public-questions");
 const questionNicknameInput = document.querySelector("#question-nickname");
 const questionTextInput = document.querySelector("#question-text");
 
 let loggedInStudent = null;
+let publicQuestionsPage = 1;
+let publicHasMoreQuestions = false;
+
+const publicQuestionsLimit = 10;
 
 function setStatus(element, message, kind = "") {
     element.textContent = message;
@@ -50,9 +55,15 @@ function formatTimestamp(timestamp) {
     return new Date(timestamp).toLocaleString();
 }
 
-function renderPublicQuestions(questions) {
-    publicList.innerHTML = "";
-    publicEmpty.classList.toggle("hidden", questions.length > 0);
+function updatePublicQuestionsState() {
+    publicEmpty.classList.toggle("hidden", publicList.children.length > 0);
+    publicLoadMoreButton?.classList.toggle("hidden", !publicHasMoreQuestions);
+}
+
+function renderPublicQuestions(questions, { append = false } = {}) {
+    if (!append) {
+        publicList.innerHTML = "";
+    }
 
     for (const question of questions) {
         const item = document.createElement("li");
@@ -70,12 +81,21 @@ function renderPublicQuestions(questions) {
         item.querySelector(".question-text").textContent = question.text;
         publicList.append(item);
     }
+
+    updatePublicQuestionsState();
 }
 
-async function loadPublicQuestions() {
-    const response = await fetch("/api/questions");
+async function loadPublicQuestions({ append = false } = {}) {
+    const nextPage = append ? publicQuestionsPage + 1 : 1;
+    const response = await fetch(`/api/questions?page=${nextPage}&limit=${publicQuestionsLimit}`);
     const questions = await response.json();
-    renderPublicQuestions(questions);
+    if (!response.ok) {
+        throw new Error(questions.error || "Unable to load questions.");
+    }
+
+    publicQuestionsPage = nextPage;
+    publicHasMoreQuestions = questions.length === publicQuestionsLimit;
+    renderPublicQuestions(questions, { append });
 }
 
 registerForm?.addEventListener("submit", async (event) => {
@@ -152,6 +172,12 @@ questionForm?.addEventListener("submit", async (event) => {
 publicRefreshButton?.addEventListener("click", () => {
     loadPublicQuestions().catch(() => {
         setStatus(questionStatus, "Unable to refresh questions right now.", "error");
+    });
+});
+
+publicLoadMoreButton?.addEventListener("click", () => {
+    loadPublicQuestions({ append: true }).catch(() => {
+        setStatus(questionStatus, "Unable to load more questions right now.", "error");
     });
 });
 

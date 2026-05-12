@@ -1,4 +1,5 @@
 import base64
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -23,6 +24,13 @@ def client(app):
 def make_basic_auth_header(username: str, password: str) -> dict[str, str]:
     token = base64.b64encode(f"{username}:{password}".encode()).decode()
     return {"Authorization": f"Basic {token}"}
+
+
+def create_questions(repository, *, author: str, count: int) -> None:
+    base_time = datetime(2024, 1, 1, tzinfo=timezone.utc)
+    for index in range(count):
+        repository.add_question(author, f"Question {index}")
+        repository._questions[-1].created_at = base_time + timedelta(seconds=index)
 
 
 def test_register_user(client):
@@ -115,6 +123,62 @@ def test_registered_student_can_post_and_everyone_can_list_questions(client):
 
     assert list_response.status_code == 200
     assert list_response.get_json() == [created_question]
+
+
+def test_list_questions_uses_default_pagination(client):
+    repository = client.application.config["REPOSITORY"]
+    repository.register_user("alice", "wonder")
+    create_questions(repository, author="alice", count=30)
+
+    response = client.get("/api/questions")
+
+    assert response.status_code == 200
+    questions = response.get_json()
+    assert len(questions) == 25
+    assert questions[0]["text"] == "Question 29"
+    assert questions[-1]["text"] == "Question 5"
+
+
+def test_list_questions_supports_page_and_limit(client):
+    repository = client.application.config["REPOSITORY"]
+    repository.register_user("alice", "wonder")
+    create_questions(repository, author="alice", count=30)
+
+    response = client.get("/api/questions?page=2&limit=10")
+
+    assert response.status_code == 200
+    assert [item["text"] for item in response.get_json()] == [
+        f"Question {index}" for index in range(19, 9, -1)
+    ]
+
+
+def test_list_questions_caps_limit_to_1000(client):
+    repository = client.application.config["REPOSITORY"]
+    repository.register_user("alice", "wonder")
+
+    for index in range(1005):
+        repository.add_question("alice", f"Question {index}")
+
+    response = client.get("/api/questions?page=1&limit=5000")
+
+    assert response.status_code == 200
+    assert len(response.get_json()) == 1000
+
+
+@pytest.mark.parametrize(
+    ("query_string", "error_message"),
+    [
+        ("page=0", "page must be a positive integer"),
+        ("page=abc", "page must be a positive integer"),
+        ("limit=0", "limit must be a positive integer"),
+        ("limit=abc", "limit must be a positive integer"),
+    ],
+)
+def test_list_questions_rejects_invalid_pagination(client, query_string, error_message):
+    response = client.get(f"/api/questions?{query_string}")
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": error_message}
 
 
 def test_post_question_rejects_invalid_credentials(client):
@@ -243,8 +307,10 @@ def test_html_pages_are_served(client):
 
     assert teacher_response.status_code == 200
     assert b"Teacher dashboard" in teacher_response.data
+    assert b"load-more-questions" in teacher_response.data
     assert student_response.status_code == 200
     assert b"Post an anonymous question" in student_response.data
+    assert b"load-more-public-questions" in student_response.data
     assert stylesheet_response.status_code == 200
     assert b":root" in stylesheet_response.data
 

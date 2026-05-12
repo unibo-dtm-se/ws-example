@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 import pytest
 
 from anonboard.store import (
@@ -74,3 +76,17 @@ def test_set_answered_rejects_unknown_question():
 
     with pytest.raises(QuestionNotFoundError):
         repository.set_answered(999, True)
+
+
+def test_list_questions_returns_requested_page_slice():
+    repository = InMemoryBoardRepository()
+    repository.register_user("alice", "secret")
+    base_time = datetime(2024, 1, 1, tzinfo=timezone.utc)
+
+    for index in range(5):
+        repository.add_question("alice", f"Question {index}")
+        repository._questions[-1].created_at = base_time + timedelta(seconds=index)
+
+    questions = repository.list_questions(page=2, limit=2)
+
+    assert [item["text"] for item in questions] == ["Question 2", "Question 1"]

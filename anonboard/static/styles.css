@@ -277,6 +277,12 @@ button:disabled {
     line-height: 1.55;
 }
 
+.load-more-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
 .mark {
     display: inline-flex;
     align-items: center;
