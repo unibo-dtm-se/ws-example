@@ -7,14 +7,16 @@ The project is intentionally didactical:
 - Flask backend with a small app factory
 - In-memory storage isolated behind a clear Python repository API
 - REST endpoints for registration and question management
+- OpenAPI specification in the project root
 - Minimal HTML, CSS, and vanilla JavaScript frontend
 - Pytest coverage for the backend behavior
 
 ## Features
 
 - Student registration via REST: nickname + password
+- Credential verification via REST without backend sessions
 - Question submission via authenticated REST requests
-- Public question listing with author, timestamp, and answered mark
+- Public paginated question listing with author, timestamp, and answered mark
 - Teacher-only state updates for answered or pending questions
 - Admin account configurable through command-line arguments or environment variables
 - Two frontend views: student page and teacher page
@@ -30,26 +32,42 @@ anonboard/
   static/         CSS and JavaScript assets
 tests/
   test_ws.py
+openapi.yaml      Reverse-engineered OpenAPI specification
 ```
 
 ## API summary
 
-- POST /api/register
-  Body: {"nickname": "alice", "password": "secret"}
-- GET /api/questions
-  Public endpoint returning all questions sorted from newest to oldest
-- POST /api/questions
-  Basic auth required, body: {"text": "Will this be on the exam?"}
-- PATCH /api/questions/<id>
-  Admin Basic auth required, body: {"answered": true}
+- `POST /api/register`
+
+  Body: `{"nickname": "alice", "password": "secret"}`
+
+- `POST /api/users/check`
+
+  Body: `{"nickname": "alice", "password": "secret"}`
+
+- `GET /api/questions`
+
+  Public endpoint returning questions sorted from newest to oldest
+
+  Query parameters: `page` defaults to `1`, `limit` defaults to `25`, backend cap is `1000`
+
+- `POST /api/questions`
+
+  Basic auth required, body: `{"text": "Will this be on the exam?"}`
+
+- `PATCH /api/questions/<id>`
+
+  Admin Basic auth required, body: `{"answered": true}`
 
 Question payloads contain:
 
-- id
-- text
-- author
-- timestamp
-- answered
+- `id`
+- `text`
+- `author`
+- `timestamp`
+- `answered`
+
+The complete reverse-engineered API description is available in [openapi.yaml](./openapi.yaml).
 
 ## Run locally
 
