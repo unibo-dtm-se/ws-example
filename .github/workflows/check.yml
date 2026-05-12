@@ -67,11 +67,12 @@ jobs:
           - windows-latest
           - macos-latest
         python-version:
-          - '3.9'
+          # - '3.9'
           - '3.10'
           - '3.11'
           - '3.12'
           - '3.13'
+          - '3.14'
     runs-on: ${{ matrix.os }}
     name: Test on Python ${{ matrix.python-version }}, on ${{ matrix.os }}
     timeout-minutes: 45
@@ -98,7 +99,7 @@ jobs:
 
   deploy:
     name: Deploy
-    permissions: 
+    permissions:
       contents: write
       packages: write
     needs:
