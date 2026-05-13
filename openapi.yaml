@@ -3,14 +3,15 @@ info:
   title: AnonBoard API
   version: 2.4.1
   description: |
-    Reverse-engineered OpenAPI specification for the AnonBoard Flask service.
+    OpenAPI specification for the AnonBoard backend service.
 
     The API allows students to register anonymous nicknames, verify stored user
     credentials, list paginated questions, submit new questions, and update the
-    answered state of a question.
+    answered state of a question. The HTML frontend is served by a separate
+    Express application.
 servers:
   - url: http://127.0.0.1:5000
-    description: Default local development server
+    description: Default local backend API server
 paths:
   /api/register:
     post:

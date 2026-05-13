@@ -12,6 +12,11 @@ let questionsPage = 1;
 let hasMoreQuestions = false;
 
 const questionsLimit = 10;
+const apiBaseUrl = String(window.__APP_CONFIG__?.BACKEND_API_URL || "http://127.0.0.1:5000");
+
+function buildApiUrl(path) {
+    return new URL(path, `${apiBaseUrl.replace(/\/$/, "")}/`).toString();
+}
 
 function readTeacherCredentials() {
     return {
@@ -40,7 +45,7 @@ function buildAuthHeader(nickname, password) {
 }
 
 async function checkTeacherCredentials(nickname, password) {
-    const response = await fetch("/api/users/check", {
+    const response = await fetch(buildApiUrl("api/users/check"), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -120,7 +125,7 @@ function renderQuestions(questions, { append = false } = {}) {
 
 async function loadQuestions({ append = false } = {}) {
     const nextPage = append ? questionsPage + 1 : 1;
-    const response = await fetch(`/api/questions?page=${nextPage}&limit=${questionsLimit}`);
+    const response = await fetch(buildApiUrl(`api/questions?page=${nextPage}&limit=${questionsLimit}`));
     const questions = await response.json();
     if (!response.ok) {
         throw new Error(questions.error || "Unable to load questions.");
@@ -144,7 +149,7 @@ async function updateQuestionMark(questionId, answered) {
         return;
     }
 
-    const response = await fetch(`/api/questions/${questionId}`, {
+    const response = await fetch(buildApiUrl(`api/questions/${questionId}`), {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
@@ -203,32 +208,6 @@ loadMoreButton?.addEventListener("click", () => {
     });
 });
 
-const initialCredentials = readTeacherCredentials();
-const nicknameField = document.querySelector("#teacher-nickname");
-const passwordField = document.querySelector("#teacher-password");
-if (nicknameField && passwordField) {
-    nicknameField.value = initialCredentials.nickname;
-    passwordField.value = initialCredentials.password;
-}
-
-async function initializeTeacherView() {
-    if (initialCredentials.nickname && initialCredentials.password) {
-        const result = await checkTeacherCredentials(initialCredentials.nickname, initialCredentials.password);
-        if (result.ok) {
-            setTeacherLoggedIn(true);
-            setTeacherStatus("Teacher credentials restored from local storage.", "success");
-        } else {
-            clearTeacherCredentials();
-            setTeacherLoggedIn(false);
-            setTeacherStatus(result.message, "error");
-        }
-    } else {
-        setTeacherLoggedIn(false);
-    }
-
-    await loadQuestions();
-}
-
-initializeTeacherView().catch(() => {
+loadQuestions().catch(() => {
     setTeacherStatus("Unable to load questions right now.", "error");
 });

@@ -24,6 +24,31 @@
         ".github/workflows/*.yaml"
       ],
       "semanticCommitType": "ci"
+    },
+    {
+      "description": "Frontend npm updates should keep a frontend scope",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchPaths": [
+        "frontend/package.json",
+        "frontend/package-lock.json"
+      ],
+      "semanticCommitScope": "frontend"
+    },
+    {
+      "description": "Backend Python dependency updates should keep a backend scope",
+      "matchManagers": [
+        "pep621",
+        "poetry",
+        "pip_requirements"
+      ],
+      "matchPaths": [
+        "backend/pyproject.toml",
+        "backend/poetry.lock",
+        "backend/requirements.txt"
+      ],
+      "semanticCommitScope": "backend"
     }
   ],
   "prConcurrentLimit": 25,

@@ -305,19 +305,23 @@ def test_questions_are_sorted_from_newest_to_oldest(client):
     ]
 
 
-def test_html_pages_are_served(client):
+def test_backend_does_not_serve_frontend_pages(client):
     teacher_response = client.get("/")
     student_response = client.get("/ask")
     stylesheet_response = client.get("/static/styles.css")
 
-    assert teacher_response.status_code == 200
-    assert b"Teacher dashboard" in teacher_response.data
-    assert b"load-more-questions" in teacher_response.data
-    assert student_response.status_code == 200
-    assert b"Post an anonymous question" in student_response.data
-    assert b"load-more-public-questions" in student_response.data
-    assert stylesheet_response.status_code == 200
-    assert b":root" in stylesheet_response.data
+    assert teacher_response.status_code == 404
+    assert student_response.status_code == 404
+    assert stylesheet_response.status_code == 404
+
+
+def test_backend_allows_cross_origin_api_requests(client):
+    response = client.options("/api/questions")
+
+    assert response.status_code == 200
+    assert response.headers["Access-Control-Allow-Origin"] == "*"
+    assert "Authorization" in response.headers["Access-Control-Allow-Headers"]
+    assert "PATCH" in response.headers["Access-Control-Allow-Methods"]
 
 
 def test_create_app_uses_defaults_and_warns(capsys):

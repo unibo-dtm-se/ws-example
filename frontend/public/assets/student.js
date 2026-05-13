@@ -16,6 +16,11 @@ let publicQuestionsPage = 1;
 let publicHasMoreQuestions = false;
 
 const publicQuestionsLimit = 10;
+const apiBaseUrl = String(window.__APP_CONFIG__?.BACKEND_API_URL || "http://127.0.0.1:5000");
+
+function buildApiUrl(path) {
+    return new URL(path, `${apiBaseUrl.replace(/\/$/, "")}/`).toString();
+}
 
 function setStatus(element, message, kind = "") {
     element.textContent = message;
@@ -39,7 +44,7 @@ function setLoggedInStudent(student) {
 }
 
 async function authenticateStudent(nickname, password) {
-    const response = await fetch("/api/users/check", {
+    const response = await fetch(buildApiUrl("api/users/check"), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -87,7 +92,9 @@ function renderPublicQuestions(questions, { append = false } = {}) {
 
 async function loadPublicQuestions({ append = false } = {}) {
     const nextPage = append ? publicQuestionsPage + 1 : 1;
-    const response = await fetch(`/api/questions?page=${nextPage}&limit=${publicQuestionsLimit}`);
+    const response = await fetch(
+        buildApiUrl(`api/questions?page=${nextPage}&limit=${publicQuestionsLimit}`)
+    );
     const questions = await response.json();
     if (!response.ok) {
         throw new Error(questions.error || "Unable to load questions.");
@@ -104,7 +111,7 @@ registerForm?.addEventListener("submit", async (event) => {
     const nickname = String(formData.get("nickname") || "").trim();
     const password = String(formData.get("password") || "");
 
-    const response = await fetch("/api/register", {
+    const response = await fetch(buildApiUrl("api/register"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nickname, password }),
@@ -133,10 +140,7 @@ registerForm?.addEventListener("submit", async (event) => {
         return;
     }
 
-    if (!response.ok) {
-        setStatus(registerStatus, payload.error || "Registration failed.", "error");
-        return;
-    }
+    setStatus(registerStatus, payload.error || "Registration failed.", "error");
 });
 
 questionForm?.addEventListener("submit", async (event) => {
@@ -149,7 +153,7 @@ questionForm?.addEventListener("submit", async (event) => {
     const formData = new FormData(questionForm);
     const text = String(formData.get("text") || "").trim();
 
-    const response = await fetch("/api/questions", {
+    const response = await fetch(buildApiUrl("api/questions"), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

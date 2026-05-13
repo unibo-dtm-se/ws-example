@@ -1,42 +1,80 @@
-let dryRun = (process.env.RELEASE_DRY_RUN || "false").toLowerCase() === "true";
-let testPypi = (process.env.RELEASE_TEST_PYPI || "false").toLowerCase() === "true";
+const dryRun = (process.env.RELEASE_DRY_RUN || "false").toLowerCase() === "true";
+const testPypi = (process.env.RELEASE_TEST_PYPI || "false").toLowerCase() === "true";
 const pypiToken = process.env.PYPI_TOKEN;
+const npmToken = process.env.NPM_TOKEN;
 
-let prepareCmd = "poetry version -- \${nextRelease.version}" + ` && poetry config pypi-token.pypi ${pypiToken}`;
-let publishCmd = `poetry publish --build`;
+const pythonRepository = testPypi ? "testpypi" : "pypi";
+const shouldPublishToPypi = !dryRun && Boolean(pypiToken);
+const shouldPublishToNpm = !dryRun && Boolean(npmToken);
 
+let backendPrepareCmd = "cd ../backend && poetry version ${nextRelease.version}";
+if (shouldPublishToPypi) {
+    backendPrepareCmd += ` && poetry config pypi-token.${pythonRepository} ${pypiToken}`;
+}
+
+let backendPublishCmd = "cd ../backend && poetry publish --build";
 if (testPypi) {
-    publishCmd += ` --repository testpypi`;
-    prepareCmd = prepareCmd.replace("pypi-token.pypi", "pypi-token.testpypi");
+    backendPublishCmd += " --repository testpypi";
+}
+if (!shouldPublishToPypi) {
+    backendPublishCmd += " --dry-run";
 }
 
-if (dryRun) {
-    publishCmd += " --dry-run";
-}
-
-import config from 'semantic-release-preconfigured-conventional-commits' with {type: 'json'};
-
-config.plugins.push(
-    ["@semantic-release/exec", {
-        "prepareCmd" : prepareCmd,
-        "publishCmd": publishCmd,
-    }]
-)
+const config = {
+    branches: ["main", "master"],
+    dryRun,
+    plugins: [
+        [
+            "@semantic-release/commit-analyzer",
+            {
+                preset: "conventionalcommits",
+            },
+        ],
+        [
+            "@semantic-release/release-notes-generator",
+            {
+                preset: "conventionalcommits",
+            },
+        ],
+        [
+            "@semantic-release/npm",
+            {
+                npmPublish: shouldPublishToNpm,
+                tarballDir: "dist",
+            },
+        ],
+        [
+            "@semantic-release/exec",
+            {
+                prepareCmd: backendPrepareCmd,
+                publishCmd: backendPublishCmd,
+            },
+        ],
+    ],
+};
 
 if (!dryRun) {
     config.plugins.push(
-        ["@semantic-release/github", {
-            "assets": [
-                { "path": "dist/*" },
-            ]
-        }],
-        ["@semantic-release/git", {
-            "assets": [
-                "CHANGELOG.md",
-                "pyproject.toml"
-            ],
-            "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
-        }]
+        [
+            "@semantic-release/github",
+            {
+                assets: [
+                    { path: "dist/*.tgz" },
+                    { path: "../backend/dist/*" },
+                ],
+            },
+        ],
+        [
+            "@semantic-release/git",
+            {
+                assets: [
+                    "package.json",
+                    "package-lock.json",
+                    "../backend/pyproject.toml",
+                ],
+                message: "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
+            },
+        ]
     );
 }
 

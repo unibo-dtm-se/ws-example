@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AnonBoard Student View</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="/assets/styles.css">
+    <script src="/app-config.js"></script>
 </head>
 <body>
     <main class="layout layout-student">
@@ -13,7 +14,7 @@
             <h1>Post an anonymous question</h1>
             <p class="lede">Create a nickname once, then send timestamped questions that appear immediately on the teacher board.</p>
             <div class="pill-row">
-                <a class="pill pill-link" href="{{ url_for('teacher_page') }}">Open teacher page</a>
+                <a class="pill pill-link" href="/">Open teacher page</a>
             </div>
         </section>
 
@@ -67,6 +68,6 @@
         </section>
     </main>
 
-    <script src="{{ url_for('static', filename='student.js') }}" defer></script>
+    <script src="/assets/student.js" defer></script>
 </body>
 </html>

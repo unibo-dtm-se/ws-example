@@ -3,8 +3,8 @@ name = "anonboard"
 packages = [
     { include = "anonboard" },
 ]
-version = "2.4.1"
-description = "A template for Python projects, using Poetry"
+version = "2.0.0"
+description = "Backend API for the AnonBoard classroom Q&A application"
 authors = ["Giovanni Ciatto <giovanni.ciatto@unibo.it>"]
 license = "Apache 2.0"
 readme = "README.md"

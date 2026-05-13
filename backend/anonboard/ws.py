@@ -3,7 +3,7 @@ from __future__ import annotations
 from functools import wraps
 from http import HTTPStatus
 
-from flask import Flask, Response, jsonify, render_template, request
+from flask import Flask, Response, jsonify, request
 from flask.typing import ResponseReturnValue
 
 from anonboard.store import (
@@ -21,7 +21,7 @@ def create_app(
     admin_password: str | None = None,
     repository: InMemoryBoardRepository | None = None,
 ) -> Flask:
-    app = Flask(__name__, template_folder="templates", static_folder="static")
+    app = Flask(__name__)
 
     repo = repository or InMemoryBoardRepository()
     configured_admin_nickname = admin_nickname or "admin"
@@ -44,13 +44,12 @@ def create_app(
     app.config["REPOSITORY"] = repo
     app.config["ADMIN_NICKNAME"] = configured_admin_nickname
 
-    @app.get("/")
-    def teacher_page() -> str:
-        return render_template("index.html", admin_nickname=configured_admin_nickname)
-
-    @app.get("/ask")
-    def student_page() -> str:
-        return render_template("ask.html")
+    @app.after_request
+    def add_cors_headers(response: Response) -> Response:
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PATCH, OPTIONS"
+        return response
 
     @app.post("/api/register")
     def register() -> ResponseReturnValue:
