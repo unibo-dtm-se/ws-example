@@ -17,14 +17,14 @@ let publicHasMoreQuestions = false;
 
 const publicQuestionsLimit = 10;
 
-function setStatus(element, message, kind = "") {
-    element.textContent = message;
-    element.className = `status-text ${kind}`.trim();
-}
-
-function buildAuthHeader(nickname, password) {
-    return `Basic ${btoa(`${nickname}:${password}`)}`;
-}
+const {
+    buildAuthHeader,
+    checkUserCredentials,
+    formatTimestamp,
+    loadQuestionsPage,
+    setStatus,
+    updateQuestionListState,
+} = window.AnonBoardCommon;
 
 function setLoggedInStudent(student) {
     loggedInStudent = student;
@@ -38,26 +38,8 @@ function setLoggedInStudent(student) {
     }
 }
 
-async function authenticateStudent(nickname, password) {
-    const response = await fetch("/api/users/check", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ nickname, password }),
-    });
-
-    const payload = await response.json();
-    return { response, payload };
-}
-
-function formatTimestamp(timestamp) {
-    return new Date(timestamp).toLocaleString();
-}
-
 function updatePublicQuestionsState() {
-    publicEmpty.classList.toggle("hidden", publicList.children.length > 0);
-    publicLoadMoreButton?.classList.toggle("hidden", !publicHasMoreQuestions);
+    updateQuestionListState(publicList, publicEmpty, publicLoadMoreButton, publicHasMoreQuestions);
 }
 
 function renderPublicQuestions(questions, { append = false } = {}) {
@@ -87,11 +69,7 @@ function renderPublicQuestions(questions, { append = false } = {}) {
 
 async function loadPublicQuestions({ append = false } = {}) {
     const nextPage = append ? publicQuestionsPage + 1 : 1;
-    const response = await fetch(`/api/questions?page=${nextPage}&limit=${publicQuestionsLimit}`);
-    const questions = await response.json();
-    if (!response.ok) {
-        throw new Error(questions.error || "Unable to load questions.");
-    }
+    const questions = await loadQuestionsPage(nextPage, publicQuestionsLimit);
 
     publicQuestionsPage = nextPage;
     publicHasMoreQuestions = questions.length === publicQuestionsLimit;
@@ -120,7 +98,7 @@ registerForm?.addEventListener("submit", async (event) => {
     }
 
     if (response.status === 409) {
-        const { response: authResponse, payload: authPayload } = await authenticateStudent(nickname, password);
+        const { response: authResponse, payload: authPayload } = await checkUserCredentials(nickname, password);
         if (authResponse.ok) {
             setLoggedInStudent({ nickname, password });
             setStatus(registerStatus, `Welcome back, ${authPayload.nickname}.`, "success");

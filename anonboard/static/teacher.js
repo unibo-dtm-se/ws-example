@@ -13,6 +13,15 @@ let hasMoreQuestions = false;
 
 const questionsLimit = 10;
 
+const {
+    buildAuthHeader,
+    checkUserCredentials,
+    formatTimestamp,
+    loadQuestionsPage,
+    setStatus,
+    updateQuestionListState: updateSharedQuestionListState,
+} = window.AnonBoardCommon;
+
 function readTeacherCredentials() {
     return {
         nickname: localStorage.getItem("anonboard.teacher.nickname") || "",
@@ -31,24 +40,11 @@ function clearTeacherCredentials() {
 }
 
 function setTeacherStatus(message, kind = "") {
-    teacherStatus.textContent = message;
-    teacherStatus.className = `status-text ${kind}`.trim();
-}
-
-function buildAuthHeader(nickname, password) {
-    return `Basic ${btoa(`${nickname}:${password}`)}`;
+    setStatus(teacherStatus, message, kind);
 }
 
 async function checkTeacherCredentials(nickname, password) {
-    const response = await fetch("/api/users/check", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ nickname, password }),
-    });
-
-    const payload = await response.json();
+    const { response, payload } = await checkUserCredentials(nickname, password);
     if (!response.ok) {
         return { ok: false, message: payload.error || "Invalid credentials." };
     }
@@ -66,13 +62,8 @@ function setTeacherLoggedIn(nextState) {
     teacherLogoutButton?.classList.toggle("hidden", !nextState);
 }
 
-function formatTimestamp(timestamp) {
-    return new Date(timestamp).toLocaleString();
-}
-
 function updateQuestionListState() {
-    questionsEmpty.classList.toggle("hidden", questionsList.children.length > 0);
-    loadMoreButton?.classList.toggle("hidden", !hasMoreQuestions);
+    updateSharedQuestionListState(questionsList, questionsEmpty, loadMoreButton, hasMoreQuestions);
 }
 
 function renderQuestions(questions, { append = false } = {}) {
@@ -120,11 +111,7 @@ function renderQuestions(questions, { append = false } = {}) {
 
 async function loadQuestions({ append = false } = {}) {
     const nextPage = append ? questionsPage + 1 : 1;
-    const response = await fetch(`/api/questions?page=${nextPage}&limit=${questionsLimit}`);
-    const questions = await response.json();
-    if (!response.ok) {
-        throw new Error(questions.error || "Unable to load questions.");
-    }
+    const questions = await loadQuestionsPage(nextPage, questionsLimit);
 
     questionsPage = nextPage;
     hasMoreQuestions = questions.length === questionsLimit;
