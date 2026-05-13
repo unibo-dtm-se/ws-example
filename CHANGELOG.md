@@ -1,3 +1,46 @@
+## 1.0.0 (2026-05-13)
+
+### ⚠ BREAKING CHANGES
+
+* rename main package to anonboard
+
+### Features
+
+* handle login on the student side ([86e79c8](https://github.com/unibo-dtm-se/ws-example/commit/86e79c80451fdf67bc47e5840c5a74e3fa38ea55))
+* implement basic ws and frontend ([2293555](https://github.com/unibo-dtm-se/ws-example/commit/22935550b9dc967144851d1767b2337eeb142aa6))
+* let client check teacher credentials before storing them ([1764d17](https://github.com/unibo-dtm-se/ws-example/commit/1764d17e567edb2a1695c5a94a32dde00c92c7cc))
+* let teacher login card disappear upon login ([ac17dd6](https://github.com/unibo-dtm-se/ws-example/commit/ac17dd6b4b80b3d4f38f30d37b47e0ba266a9d8e))
+* pagination ([dc4a67f](https://github.com/unibo-dtm-se/ws-example/commit/dc4a67f8e3738a33c90dd2eed1e85ee3bdc59da0))
+
+### Dependency updates
+
+* **deps:** add flask to dependencies ([88eb111](https://github.com/unibo-dtm-se/ws-example/commit/88eb11179b3c5b8e938c0e29421a98dbde0129c8))
+* **deps:** remove support for python =< 3.9 ([5e4e6bf](https://github.com/unibo-dtm-se/ws-example/commit/5e4e6bf5198b2621c16ffd9cf7e6d7fe69f2b97b))
+
+### Bug Fixes
+
+* factorize common js logic between student.js and teacher.js ([0646b75](https://github.com/unibo-dtm-se/ws-example/commit/0646b75f6ffe8c524cda241eb379a2ee7cd44660))
+* **ui:** remove max-width from headers ([d08f3af](https://github.com/unibo-dtm-se/ws-example/commit/d08f3af8aa308a450931ad06f8a0a6a487bea27e))
+* version number ([b607ea3](https://github.com/unibo-dtm-se/ws-example/commit/b607ea3349a83bcca88a5fc406cadf8adc7dc481))
+
+### Tests
+
+* add tests to increase coverage ([6644a32](https://github.com/unibo-dtm-se/ws-example/commit/6644a3274b95eb2b2505ac0413fb92771010957e))
+* add unit tests for backend ([464fe31](https://github.com/unibo-dtm-se/ws-example/commit/464fe3117083dfc07375fca360b077be8f52687f))
+* fix test_questions_are_sorted_from_newest_to_oldest to enforce time diffence among posts ([6339eff](https://github.com/unibo-dtm-se/ws-example/commit/6339eff39a3dcb377b95351c54734b645e37572a))
+
+### General maintenance
+
+* add reverse-engineered OAS spec ([f2034af](https://github.com/unibo-dtm-se/ws-example/commit/f2034afd87e28901ce521d21e1c8e990b244979d))
+* initialise repository renaming files and removing init workflow [skip ci] ([86591f8](https://github.com/unibo-dtm-se/ws-example/commit/86591f81fc6f8cb0efa2e04befd8a8a2b851a92f))
+* present project in the readme ([ab1ea54](https://github.com/unibo-dtm-se/ws-example/commit/ab1ea54f4cf119f0f307cf6da8e1872d1df93627))
+* readme update ([8f9ce22](https://github.com/unibo-dtm-se/ws-example/commit/8f9ce22ca1374202f362a0903fdb3baa7b5de704))
+* **style:** reformat code and fix minor styling issues ([3114dcf](https://github.com/unibo-dtm-se/ws-example/commit/3114dcf095a9ec126530944012989b6e5bde8bdf))
+
+### Refactoring
+
+* rename main package to anonboard ([9818f82](https://github.com/unibo-dtm-se/ws-example/commit/9818f82df0851508985725240750e345f306674d))
+
 ## [2.4.1](https://github.com/aequitas-aod/template-python-project-poetry/compare/2.4.0...2.4.1) (2025-12-19)
 
 ### Dependency updates
