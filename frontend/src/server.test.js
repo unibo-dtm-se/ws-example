@@ -13,6 +13,7 @@ test("serves the teacher page", async () => {
 
     assert.equal(response.statusCode, 200);
     assert.match(response.text, /Teacher dashboard/);
+    assert.match(response.text, /common\.js/);
     assert.match(response.text, /teacher\.js/);
 });
 
@@ -21,6 +22,7 @@ test("serves the student page", async () => {
 
     assert.equal(response.statusCode, 200);
     assert.match(response.text, /Post an anonymous question/);
+    assert.match(response.text, /common\.js/);
     assert.match(response.text, /student\.js/);
 });
 

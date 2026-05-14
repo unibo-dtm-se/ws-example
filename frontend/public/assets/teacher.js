@@ -7,16 +7,19 @@ const questionsEmpty = document.querySelector("#questions-empty");
 const refreshButton = document.querySelector("#refresh-questions");
 const loadMoreButton = document.querySelector("#load-more-questions");
 
+const {
+    buildAuthHeader,
+    createQuestionListItem,
+    fetchJson,
+    fetchQuestionsPage,
+    setStatus,
+} = window.AnonBoardCommon;
+
 let teacherLoggedIn = false;
 let questionsPage = 1;
 let hasMoreQuestions = false;
 
 const questionsLimit = 10;
-const apiBaseUrl = String(window.__APP_CONFIG__?.BACKEND_API_URL || "http://127.0.0.1:5000");
-
-function buildApiUrl(path) {
-    return new URL(path, `${apiBaseUrl.replace(/\/$/, "")}/`).toString();
-}
 
 function readTeacherCredentials() {
     return {
@@ -36,16 +39,11 @@ function clearTeacherCredentials() {
 }
 
 function setTeacherStatus(message, kind = "") {
-    teacherStatus.textContent = message;
-    teacherStatus.className = `status-text ${kind}`.trim();
-}
-
-function buildAuthHeader(nickname, password) {
-    return `Basic ${btoa(`${nickname}:${password}`)}`;
+    setStatus(teacherStatus, message, kind);
 }
 
 async function checkTeacherCredentials(nickname, password) {
-    const response = await fetch(buildApiUrl("api/users/check"), {
+    const { response, payload } = await fetchJson("api/users/check", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -53,7 +51,6 @@ async function checkTeacherCredentials(nickname, password) {
         body: JSON.stringify({ nickname, password }),
     });
 
-    const payload = await response.json();
     if (!response.ok) {
         return { ok: false, message: payload.error || "Invalid credentials." };
     }
@@ -71,10 +68,6 @@ function setTeacherLoggedIn(nextState) {
     teacherLogoutButton?.classList.toggle("hidden", !nextState);
 }
 
-function formatTimestamp(timestamp) {
-    return new Date(timestamp).toLocaleString();
-}
-
 function updateQuestionListState() {
     questionsEmpty.classList.toggle("hidden", questionsList.children.length > 0);
     loadMoreButton?.classList.toggle("hidden", !hasMoreQuestions);
@@ -86,26 +79,6 @@ function renderQuestions(questions, { append = false } = {}) {
     }
 
     for (const question of questions) {
-        const item = document.createElement("li");
-        item.className = "question-item";
-
-        const header = document.createElement("div");
-        header.className = "question-header";
-
-        const meta = document.createElement("div");
-        meta.className = "question-meta";
-        meta.innerHTML = `<strong>${question.author}</strong><span>${formatTimestamp(question.timestamp)}</span>`;
-
-        const mark = document.createElement("span");
-        mark.className = `mark ${question.answered ? "mark-answered" : "mark-pending"}`;
-        mark.textContent = question.answered ? "Answered" : "Pending";
-
-        header.append(meta, mark);
-
-        const text = document.createElement("p");
-        text.className = "question-text";
-        text.textContent = question.text;
-
         const footer = document.createElement("div");
         footer.className = "question-footer";
 
@@ -116,8 +89,7 @@ function renderQuestions(questions, { append = false } = {}) {
         toggle.addEventListener("click", () => updateQuestionMark(question.id, !question.answered));
 
         footer.append(toggle);
-        item.append(header, text, footer);
-        questionsList.append(item);
+        questionsList.append(createQuestionListItem(question, footer));
     }
 
     updateQuestionListState();
@@ -125,11 +97,7 @@ function renderQuestions(questions, { append = false } = {}) {
 
 async function loadQuestions({ append = false } = {}) {
     const nextPage = append ? questionsPage + 1 : 1;
-    const response = await fetch(buildApiUrl(`api/questions?page=${nextPage}&limit=${questionsLimit}`));
-    const questions = await response.json();
-    if (!response.ok) {
-        throw new Error(questions.error || "Unable to load questions.");
-    }
+    const questions = await fetchQuestionsPage(nextPage, questionsLimit);
 
     questionsPage = nextPage;
     hasMoreQuestions = questions.length === questionsLimit;
@@ -149,7 +117,7 @@ async function updateQuestionMark(questionId, answered) {
         return;
     }
 
-    const response = await fetch(buildApiUrl(`api/questions/${questionId}`), {
+    const { response, payload } = await fetchJson(`api/questions/${questionId}`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
@@ -159,7 +127,6 @@ async function updateQuestionMark(questionId, answered) {
     });
 
     if (!response.ok) {
-        const payload = await response.json();
         setTeacherStatus(payload.error || "Failed to update question.", "error");
         return;
     }

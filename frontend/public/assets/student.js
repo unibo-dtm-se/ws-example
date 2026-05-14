@@ -11,25 +11,19 @@ const publicLoadMoreButton = document.querySelector("#load-more-public-questions
 const questionNicknameInput = document.querySelector("#question-nickname");
 const questionTextInput = document.querySelector("#question-text");
 
+const {
+    buildAuthHeader,
+    createQuestionListItem,
+    fetchJson,
+    fetchQuestionsPage,
+    setStatus,
+} = window.AnonBoardCommon;
+
 let loggedInStudent = null;
 let publicQuestionsPage = 1;
 let publicHasMoreQuestions = false;
 
 const publicQuestionsLimit = 10;
-const apiBaseUrl = String(window.__APP_CONFIG__?.BACKEND_API_URL || "http://127.0.0.1:5000");
-
-function buildApiUrl(path) {
-    return new URL(path, `${apiBaseUrl.replace(/\/$/, "")}/`).toString();
-}
-
-function setStatus(element, message, kind = "") {
-    element.textContent = message;
-    element.className = `status-text ${kind}`.trim();
-}
-
-function buildAuthHeader(nickname, password) {
-    return `Basic ${btoa(`${nickname}:${password}`)}`;
-}
 
 function setLoggedInStudent(student) {
     loggedInStudent = student;
@@ -44,20 +38,13 @@ function setLoggedInStudent(student) {
 }
 
 async function authenticateStudent(nickname, password) {
-    const response = await fetch(buildApiUrl("api/users/check"), {
+    return fetchJson("api/users/check", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({ nickname, password }),
     });
-
-    const payload = await response.json();
-    return { response, payload };
-}
-
-function formatTimestamp(timestamp) {
-    return new Date(timestamp).toLocaleString();
 }
 
 function updatePublicQuestionsState() {
@@ -71,20 +58,7 @@ function renderPublicQuestions(questions, { append = false } = {}) {
     }
 
     for (const question of questions) {
-        const item = document.createElement("li");
-        item.className = "question-item";
-        item.innerHTML = `
-            <div class="question-header">
-                <div class="question-meta">
-                    <strong>${question.author}</strong>
-                    <span>${formatTimestamp(question.timestamp)}</span>
-                </div>
-                <span class="mark ${question.answered ? "mark-answered" : "mark-pending"}">${question.answered ? "Answered" : "Pending"}</span>
-            </div>
-            <p class="question-text"></p>
-        `;
-        item.querySelector(".question-text").textContent = question.text;
-        publicList.append(item);
+        publicList.append(createQuestionListItem(question));
     }
 
     updatePublicQuestionsState();
@@ -92,13 +66,7 @@ function renderPublicQuestions(questions, { append = false } = {}) {
 
 async function loadPublicQuestions({ append = false } = {}) {
     const nextPage = append ? publicQuestionsPage + 1 : 1;
-    const response = await fetch(
-        buildApiUrl(`api/questions?page=${nextPage}&limit=${publicQuestionsLimit}`)
-    );
-    const questions = await response.json();
-    if (!response.ok) {
-        throw new Error(questions.error || "Unable to load questions.");
-    }
+    const questions = await fetchQuestionsPage(nextPage, publicQuestionsLimit);
 
     publicQuestionsPage = nextPage;
     publicHasMoreQuestions = questions.length === publicQuestionsLimit;
@@ -111,13 +79,12 @@ registerForm?.addEventListener("submit", async (event) => {
     const nickname = String(formData.get("nickname") || "").trim();
     const password = String(formData.get("password") || "");
 
-    const response = await fetch(buildApiUrl("api/register"), {
+    const { response, payload } = await fetchJson("api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nickname, password }),
     });
 
-    const payload = await response.json();
     if (response.ok) {
         setLoggedInStudent({ nickname, password });
         setStatus(registerStatus, `Nickname ${payload.nickname} ready to post.`, "success");
@@ -153,7 +120,7 @@ questionForm?.addEventListener("submit", async (event) => {
     const formData = new FormData(questionForm);
     const text = String(formData.get("text") || "").trim();
 
-    const response = await fetch(buildApiUrl("api/questions"), {
+    const { response, payload } = await fetchJson("api/questions", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -162,7 +129,6 @@ questionForm?.addEventListener("submit", async (event) => {
         body: JSON.stringify({ text }),
     });
 
-    const payload = await response.json();
     if (!response.ok) {
         setStatus(questionStatus, payload.error || "Question submission failed.", "error");
         return;
