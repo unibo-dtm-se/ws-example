@@ -129,13 +129,13 @@ jobs:
         run: poetry run poe test
         working-directory: backend
 
-  deploy:
-    name: Deploy
+  release:
+    name: Release
     permissions:
       contents: write
       packages: write
     needs:
       - backend-test
       - frontend-test
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/release.yml
     secrets: inherit
