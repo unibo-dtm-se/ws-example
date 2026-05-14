@@ -66,8 +66,19 @@ jobs:
           overwrite: true
 
   frontend-test:
-    runs-on: ubuntu-latest
-    name: Frontend Tests
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+        node-version:
+          - '24.15.0'
+          - '25'
+          - '26'
+    runs-on: ${{ matrix.os }}
+    name: Frontend Test on Node ${{ matrix.node-version }}, on ${{ matrix.os }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
@@ -75,7 +86,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version-file: frontend/package.json
+          node-version: ${{ matrix.node-version }}
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -84,7 +95,7 @@ jobs:
         working-directory: frontend
 
       - name: Test frontend
-        run: npm tests
+        run: npm run tests
         working-directory: frontend
 
   backend-test:
@@ -128,14 +139,3 @@ jobs:
         shell: bash
         run: poetry run poe test
         working-directory: backend
-
-  release:
-    name: Release
-    permissions:
-      contents: write
-      packages: write
-    needs:
-      - backend-test
-      - frontend-test
-    uses: ./.github/workflows/release.yml
-    secrets: inherit
