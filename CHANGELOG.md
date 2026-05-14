@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/unibo-dtm-se/ws-example/compare/1.0.0...1.0.1) (2026-05-14)
+
+### Bug Fixes
+
+* **release:** change command to release on test-pypi ([221cccf](https://github.com/unibo-dtm-se/ws-example/commit/221cccf1d8dbc0942ae6111426e89eb346024fdf))
+
 ## 1.0.0 (2026-05-13)
 
 ### ⚠ BREAKING CHANGES
