@@ -24,6 +24,13 @@ function createApp() {
         );
     }
 
+    // Log HTTP requests
+    app.use((request, response, next) => {
+        const timestamp = new Date().toISOString();
+        console.log(`[${timestamp}] ${request.method} ${request.path}`);
+        next();
+    });
+
     app.use("/assets", express.static(path.join(publicDir, "assets")));
 
     app.get("/app-config.js", (_request, response) => {
@@ -54,6 +61,7 @@ if (process.env.NODE_ENV !== "test") {
     const port = Number(process.env.PORT || "3000");
     app.listen(port, () => {
         console.log(`AnonBoard frontend listening on port http://localhost:${port}`);
+        console.log("Press Ctrl+C to stop the frontend server");
     });
 }
 
