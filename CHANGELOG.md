@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/unibo-dtm-se/ws-example/compare/1.0.1...1.0.2) (2026-05-14)
+
+### Bug Fixes
+
+* force release on test pypi ([1010f18](https://github.com/unibo-dtm-se/ws-example/commit/1010f180f94bd84d8154d979897d3444df0b9d16))
+
 ## [1.0.1](https://github.com/unibo-dtm-se/ws-example/compare/1.0.0...1.0.1) (2026-05-14)
 
 ### Bug Fixes
