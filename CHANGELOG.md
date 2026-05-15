@@ -1,3 +1,14 @@
+## [1.1.0](https://github.com/unibo-dtm-se/ws-example/compare/1.0.2...1.1.0) (2026-05-15)
+
+### Features
+
+* let ws serve OAS too ([038aa4a](https://github.com/unibo-dtm-se/ws-example/commit/038aa4acd75597b6d4aba07756379e28f385d8fa))
+
+### General maintenance
+
+* **build:** general poe task for static checks ([09f8500](https://github.com/unibo-dtm-se/ws-example/commit/09f8500cc446b1b64cac579577bdeeb1abfe1e27))
+* **ci:** rename deploy script to release ([77ad0e8](https://github.com/unibo-dtm-se/ws-example/commit/77ad0e8ff233fc2b572c69ab06da3c0a7f777c96))
+
 ## [1.0.2](https://github.com/unibo-dtm-se/ws-example/compare/1.0.1...1.0.2) (2026-05-14)
 
 ### Bug Fixes
