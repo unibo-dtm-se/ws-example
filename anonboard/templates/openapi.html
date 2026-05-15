@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnonBoard OpenAPI Specification</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+    <style>
+        :root { color-scheme: light; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #f5f7fb;
+        }
+        header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #d8ddee;
+            background: linear-gradient(90deg, #effffb, #f5f8ff);
+            font-family: ui-sans-serif, system-ui, sans-serif;
+        }
+        h1 { margin: 0; font-size: 1.25rem; font-weight: 700; color: #1a2238; }
+        p { margin: 0.4rem 0 0; color: #4a5778; font-size: 0.95rem; }
+        #swagger-ui { max-width: 1200px; margin: 0 auto; }
+        .swagger-ui .topbar { display: none; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AnonBoard OpenAPI</h1>
+        <p>This page is served by <code>GET /api</code>. The source file is <code>/static/openapi.yaml</code>. Use <code>Accept: application/json</code> or <code>Accept: application/yaml</code> for raw formats.</p>
+    </header>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script>
+        const openApiSpec = {{ parsed_spec | tojson }};
+        SwaggerUIBundle({
+            spec: openApiSpec,
+            dom_id: "#swagger-ui",
+            deepLinking: true,
+            docExpansion: "list",
+            defaultModelsExpandDepth: 1,
+            displayRequestDuration: true,
+        });
+    </script>
+</body>
+</html>

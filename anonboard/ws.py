@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import json
 from functools import wraps
 from http import HTTPStatus
+from pathlib import Path
 
 from flask import Flask, Response, jsonify, render_template, request
 from flask.typing import ResponseReturnValue
+import yaml
 
 from anonboard.store import (
     DuplicateNicknameError,
@@ -22,6 +25,7 @@ def create_app(
     repository: InMemoryBoardRepository | None = None,
 ) -> Flask:
     app = Flask(__name__, template_folder="templates", static_folder="static")
+    openapi_path = Path(__file__).resolve().parent / "static" / "openapi.yaml"
 
     repo = repository or InMemoryBoardRepository()
     configured_admin_nickname = admin_nickname or "admin"
@@ -43,6 +47,7 @@ def create_app(
 
     app.config["REPOSITORY"] = repo
     app.config["ADMIN_NICKNAME"] = configured_admin_nickname
+    app.config["OPENAPI_PATH"] = openapi_path
 
     @app.get("/")
     def teacher_page() -> str:
@@ -71,6 +76,10 @@ def create_app(
             jsonify({"nickname": user.nickname, "is_admin": user.is_admin}),
             HTTPStatus.CREATED,
         )
+
+    @app.get("/api")
+    def openapi_spec() -> ResponseReturnValue:
+        return _serve_openapi_spec(_preferred_oas_format_from_accept(), openapi_path)
 
     @app.get("/api/questions")
     def list_questions() -> ResponseReturnValue:
@@ -173,3 +182,58 @@ def _read_positive_int_query_param(
     if maximum is not None:
         return min(value, maximum)
     return value
+
+
+def _preferred_oas_format_from_accept() -> str:
+    preferred_mimetype = request.accept_mimetypes.best_match(
+        [
+            "text/html",
+            "application/json",
+            "application/vnd.oai.openapi+json",
+            "application/yaml",
+            "application/x-yaml",
+            "text/yaml",
+            "application/vnd.oai.openapi",
+        ]
+    )
+    if preferred_mimetype in {"application/json", "application/vnd.oai.openapi+json"}:
+        return "json"
+    if preferred_mimetype in {
+        "application/yaml",
+        "application/x-yaml",
+        "text/yaml",
+        "application/vnd.oai.openapi",
+    }:
+        return "yaml"
+    return "html"
+
+
+def _serve_openapi_spec(oas_format: str, openapi_path: Path) -> ResponseReturnValue:
+    try:
+        yaml_content = openapi_path.read_text(encoding="utf-8")
+    except OSError:
+        return jsonify(
+            {"error": "OpenAPI specification not available"}
+        ), HTTPStatus.NOT_FOUND
+
+    yaml_content = yaml_content.replace(
+        "http://127.0.0.1:5000", request.host_url.rstrip("/")
+    )
+
+    try:
+        parsed_spec = yaml.safe_load(yaml_content)
+    except yaml.YAMLError as exc:
+        return (
+            jsonify({"error": f"OpenAPI specification is invalid YAML: {exc}"}),
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+        )
+
+    if oas_format == "json":
+        return Response(json.dumps(parsed_spec, indent=2), mimetype="application/json")
+    if oas_format == "yaml":
+        return Response(yaml.safe_dump(parsed_spec), mimetype="application/yaml")
+    return Response(_build_openapi_html_page(parsed_spec), mimetype="text/html")
+
+
+def _build_openapi_html_page(parsed_spec: dict) -> str:
+    return render_template("openapi.html", parsed_spec=parsed_spec)

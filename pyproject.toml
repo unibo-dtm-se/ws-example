@@ -13,6 +13,7 @@ readme = "README.md"
 # update the Python versions in .github/workflows/check.yml if you change this
 python = ">= 3.10.0 < 4.0.0"
 flask = "^3.1.2"
+pyyaml = "^6.0.2"
 
 [tool.poetry.group.dev.dependencies]
 coverage = "^7.4.0"
@@ -21,6 +22,7 @@ poethepoet = "^0.37.0"
 poetry = "^1.8.3"
 pytest = "^8.3.5"
 ruff = "^0.15.0"
+types-PyYAML = "^6.0.12"
 
 [tool.poe.tasks]
 serve = "python -m anonboard"

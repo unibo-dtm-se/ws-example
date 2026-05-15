@@ -309,6 +309,7 @@ def test_html_pages_are_served(client):
     teacher_response = client.get("/")
     student_response = client.get("/ask")
     stylesheet_response = client.get("/static/styles.css")
+    openapi_response = client.get("/static/openapi.yaml")
 
     assert teacher_response.status_code == 200
     assert b"Teacher dashboard" in teacher_response.data
@@ -318,6 +319,35 @@ def test_html_pages_are_served(client):
     assert b"load-more-public-questions" in student_response.data
     assert stylesheet_response.status_code == 200
     assert b":root" in stylesheet_response.data
+    assert openapi_response.status_code == 200
+    assert b"openapi: 3.1.0" in openapi_response.data
+
+
+def test_api_can_serve_openapi_yaml(client):
+    response = client.get("/api", headers={"Accept": "application/yaml"})
+
+    assert response.status_code == 200
+    assert response.mimetype == "application/yaml"
+    assert "openapi: 3.1.0" in response.get_data(as_text=True)
+
+
+def test_api_can_serve_openapi_json(client):
+    response = client.get("/api", headers={"Accept": "application/json"})
+
+    assert response.status_code == 200
+    assert response.mimetype == "application/json"
+    payload = response.get_json()
+    assert payload["openapi"] == "3.1.0"
+    assert payload["info"]["title"] == "AnonBoard API"
+
+
+def test_api_serves_openapi_html_by_default(client):
+    response = client.get("/api")
+
+    assert response.status_code == 200
+    assert response.mimetype == "text/html"
+    assert b"AnonBoard OpenAPI" in response.data
+    assert b"swagger-ui" in response.data
 
 
 def test_create_app_uses_defaults_and_warns(capsys):

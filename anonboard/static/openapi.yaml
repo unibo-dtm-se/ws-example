@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: AnonBoard API
-  version: 2.4.1
+  version: 1.0.0
   description: |
     Reverse-engineered OpenAPI specification for the AnonBoard Flask service.
 

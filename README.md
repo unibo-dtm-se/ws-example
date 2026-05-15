@@ -30,9 +30,9 @@ anonboard/
   ws.py           Flask app factory and HTTP routes
   templates/      HTML pages served by Flask
   static/         CSS and JavaScript assets
+    openapi.yaml  Reverse-engineered OpenAPI specification
 tests/
   test_ws.py
-openapi.yaml      Reverse-engineered OpenAPI specification
 ```
 
 ## API summary
@@ -67,7 +67,7 @@ Question payloads contain:
 - `timestamp`
 - `answered`
 
-The complete reverse-engineered API description is available in [openapi.yaml](./openapi.yaml).
+The complete reverse-engineered API description is available in [anonboard/static/openapi.yaml](./anonboard/static/openapi.yaml).
 
 ## Run locally
 
@@ -95,6 +95,12 @@ Open these pages in the browser:
 
 - http://127.0.0.1:5000/ for the teacher dashboard
 - http://127.0.0.1:5000/ask for the student page
+
+The OpenAPI specification is served by `GET /api` using HTTP content negotiation:
+
+- Default (browser / `Accept: text/html`): a Swagger-like rendered documentation page
+- `Accept: application/json`: raw JSON OpenAPI document
+- `Accept: application/yaml` (or `application/x-yaml`, `text/yaml`): raw YAML OpenAPI document
 
 ## Test suite
 
