@@ -97,12 +97,12 @@ jobs:
         shell: bash
         run: poetry run poe test
 
-  deploy:
-    name: Deploy
+  release:
+    name: Release
     permissions:
       contents: write
       packages: write
     needs:
       - test
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/release.yml
     secrets: inherit

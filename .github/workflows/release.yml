@@ -1,4 +1,4 @@
-name: deploy
+name: Release on GitHub and PyPI
 on:
   workflow_call:
   workflow_dispatch:
@@ -10,7 +10,7 @@ jobs:
     name: Release
     concurrency:
       # Only one release job at a time. Strictly sequential.
-      group: deploy
+      group: release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -54,7 +54,7 @@ jobs:
         with:
           node-version: ${{ steps.get-node-version.outputs.version }}
 
-      - name: Release
+      - name: Trigger semantic release
         shell: bash
         run: |
           npm install
