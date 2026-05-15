@@ -37,6 +37,8 @@ format-check = "ruff format --check"
 mypy = "mypy anonboard tests"
 compile = "python -m compileall anonboard tests"
 static-checks = [
+    "compile",
+    "format-check",
     "ruff-check",
     "mypy",
 ]

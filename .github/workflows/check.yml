@@ -31,17 +31,9 @@ jobs:
       - name: Restore Development Environment
         run: poetry install
 
-      - name: Check code is syntactically correct
-        shell: bash
-        run: poetry run poe compile
-
       - name: Static Checks
         shell: bash
         run: poetry run poe static-checks
-
-      - name: Format Check
-        shell: bash
-        run: poetry run poe format-check
 
       - name: Test with Coverage
         shell: bash
