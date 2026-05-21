@@ -1,3 +1,13 @@
+## [1.1.1](https://github.com/unibo-dtm-se/ws-example/compare/1.1.0...1.1.1) (2026-05-21)
+
+### Bug Fixes
+
+* graceful ws shutdown upon keyboard interrupt ([6b2c195](https://github.com/unibo-dtm-se/ws-example/commit/6b2c195598fa59769eb59112a3f956edc1d6e3ce))
+
+### General maintenance
+
+* **build:** add poe task for public serving ([52925b5](https://github.com/unibo-dtm-se/ws-example/commit/52925b53964c6ad6a8c5bcd5af985c445110e5c6))
+
 ## [1.1.0](https://github.com/unibo-dtm-se/ws-example/compare/1.0.2...1.1.0) (2026-05-15)
 
 ### Features
