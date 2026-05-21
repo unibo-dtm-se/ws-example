@@ -26,6 +26,7 @@ types-PyYAML = "^6.0.12"
 
 [tool.poe.tasks]
 serve = "python -m anonboard"
+serve-publicly = "python -m anonboard --host 0.0.0.0"
 test = "pytest"
 coverage = "coverage run -m pytest"
 coverage-report = "coverage report -m"
