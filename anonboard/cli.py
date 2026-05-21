@@ -30,4 +30,8 @@ def main() -> None:
         admin_nickname=args.admin_nickname,
         admin_password=args.admin_password,
     )
-    app.run(host=args.host, port=args.port, debug=args.debug)
+    try:
+        app.run(host=args.host, port=args.port, debug=args.debug)
+    except KeyboardInterrupt:
+        print("Shutting down gracefully.")
+        exit(0)
